@@ -121,14 +121,11 @@ def parse_args():
     target_sources.append(first_env(generic_target_env))
     target = next((value.strip() for value in target_sources if value and value.strip()), '')
     if not target:
-        env_hint = ' / '.join(CHANNEL_TARGET_ENV_VARS.get(channel, ()) + CURRENT_TARGET_ENV_VARS)
+        env_hint = ' / '.join(CHANNEL_TARGET_ENV_VARS.get(channel, ()) + current_target_env)
         parser.error(f'missing target: pass --target, use --to {channel}:<target>, or set {env_hint}')
 
     args.channel = channel
     args.target = target
-    args.used_current_context = use_current and (
-        (not args.channel and False)  # kept for explicitness; resolved below via source strings
-    )
 
     if args.silent and not SUPPORTED_CHANNELS[channel]['supports_silent']:
         print(f'WARN: --silent is not marked as supported for channel={channel}; passing it through anyway', file=sys.stderr)
@@ -188,7 +185,7 @@ def main():
             continue
 
         print(f'[{args.channel}] sending {file_path} -> {args.target}', file=sys.stderr)
-        proc = subprocess.run(cmd, text=True)
+        proc = subprocess.run(cmd, text=True, timeout=120)
         if proc.returncode == 0:
             success += 1
             print(f'[{args.channel}] sent: {file_path} -> {args.target}', file=sys.stderr)
@@ -202,7 +199,5 @@ def main():
     sys.exit(exit_code)
 
 
-if __name__ == '__main__':
-    main()
 if __name__ == '__main__':
     main()
